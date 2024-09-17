@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de YouTube con Velocidad Ajustable y Tap Tempo</title>
+    <title>Reproductor de YouTube con Control MIDI</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,23 +48,11 @@
         .speed-buttons {
             margin-top: 10px;
         }
-
-        .tap-button {
-            padding: 10px;
-            font-size: 16px;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-
-        .bpm-display {
-            margin-top: 10px;
-            font-size: 24px;
-        }
     </style>
 </head>
 
 <body>
-    <h1>Reproductor de YouTube con Velocidad Ajustable y Tap Tempo</h1>
+    <h1>Reproductor de YouTube con Control MIDI</h1>
 
     <div class="container">
         <input type="text" id="searchQuery" placeholder="Buscar en YouTube..." style="width: 300px;">
@@ -90,7 +78,7 @@
 
         <div class="control">
             <label for="speed">Velocidad:</label>
-            <input type="range" id="speed" min="-0.5" max="0.5" step="0.01" value="0">
+            <input type="range" id="speed" min="-1" max="1" step="0.01" value="0">
             <span id="speedValue">1.0</span>
         </div>
 
@@ -105,41 +93,23 @@
             <button onmousedown="changeSpeed(1.2)" onmouseup="resetSpeed()">Velocidad 1.2x</button>
             <button onmousedown="changeSpeed(0.8)" onmouseup="resetSpeed()">Velocidad 0.8x</button>
         </div>
-
-        <!-- Tap Tempo Button -->
-        <button class="tap-button" onclick="tapTempo()">Toca para BPM</button>
-        <div class="bpm-display" id="bpmDisplay">BPM: 0</div>
     </div>
 
     <script>
         let player;
-        let playerReady = false; // Bandera para verificar si el reproductor está listo
         let nextPageToken = '', prevPageToken = '';
-        const apiKey = 'AIzaSyBcreu8WuHxYkxgKzn6ncFvvN1i-GDTsmw';  // Inserta aquí tu nueva clave de API de YouTube Data
-        const referenceBPM = 120;  // BPM de referencia para ajustar la velocidad
-
-        // Cargar la API de YouTube IFrame
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        const apiKey = 'AIzaSyA3PhOaP9uUlaB-OR3CN7i3fWzJkan67vk';  // Inserta aquí tu clave de API de YouTube Data
 
         // Esta función es llamada por la API de YouTube IFrame cuando está lista
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '200',  // Ajusta el tamaño según tu preferencia
-                width: '300',
+                height: '180',
+                width: '360',
                 videoId: '', // No se carga ningún video inicialmente
                 events: {
-                    'onReady': onPlayerReady
+                    'onReady': setupControls
                 }
             });
-        }
-
-        // Función llamada cuando el reproductor está listo
-        function onPlayerReady(event) {
-            playerReady = true; // Marcar el reproductor como listo
-            setupControls();    // Configurar los controles
         }
 
         // Configurar los controles de volumen y velocidad
@@ -163,55 +133,33 @@
             });
         }
 
-        // Función para reproducir el video
-        function playVideo() {
-            if (playerReady) {
-                player.playVideo();
-            } else {
-                console.log("El reproductor no está listo.");
-            }
-        }
-
-        // Función para detener el video
-        function stopVideo() {
-            if (playerReady) {
-                player.stopVideo();
-            } else {
-                console.log("El reproductor no está listo.");
-            }
-        }
-
         // Función para ajustar la velocidad temporalmente
         function changeSpeed(speed) {
-            if (playerReady) {
-                player.setPlaybackRate(speed);
-            }
+            player.setPlaybackRate(speed);
         }
 
         // Función para restablecer la velocidad a 1.0
         function resetSpeed() {
-            if (playerReady) {
-                player.setPlaybackRate(1.0);
-            }
+            player.setPlaybackRate(1.0);
+        }
+
+        // Función para reproducir el video
+        function playVideo() {
+            player.playVideo();
+        }
+
+        // Función para detener el video
+        function stopVideo() {
+            player.stopVideo();
         }
 
         // Función para buscar videos en YouTube
         function searchVideos(pageToken = '') {
             const query = document.getElementById("searchQuery").value;
-            if (!query) {
-                alert("Por favor, introduce un término de búsqueda");
-                return;
-            }
-
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=10&videoEmbeddable=true&pageToken=${pageToken}`;
 
             fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const videoList = document.getElementById("videoList");
                     videoList.innerHTML = '';  // Limpiar lista anterior
@@ -219,12 +167,6 @@
                     // Guardar tokens de paginación
                     nextPageToken = data.nextPageToken || '';
                     prevPageToken = data.prevPageToken || '';
-
-                    // Si no hay resultados, mostrar un mensaje
-                    if (!data.items || data.items.length === 0) {
-                        videoList.innerHTML = '<li>No se encontraron resultados.</li>';
-                        return;
-                    }
 
                     // Solo mostrar videos embebibles
                     data.items.forEach(item => {
@@ -238,8 +180,7 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Error al buscar videos:', error);
-                    alert('Error al buscar videos: ' + error.message);
+                    console.error(`Error al buscar videos:`, error);
                 });
         }
 
@@ -258,10 +199,46 @@
                 searchVideos(prevPageToken);
             }
         }
+
+        // Función para inicializar la API MIDI y manejar los mensajes MIDI
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+        } else {
+            console.log("Tu navegador no soporta la API MIDI.");
+        }
+
+        function onMIDISuccess(midiAccess) {
+            console.log("Acceso MIDI concedido.");
+            midiAccess.inputs.forEach(input => {
+                input.onmidimessage = adjustVolumeWithMIDI;  // Todos los mensajes MIDI ajustarán el volumen
+            });
+        }
+
+        function onMIDIFailure() {
+            console.log("Error al acceder al dispositivo MIDI.");
+        }
+
+        // Función para ajustar el volumen con MIDI
+        function adjustVolumeWithMIDI(message) {
+            const [status, data1, data2] = message.data;
+
+            // Normalizamos el valor de data2 a un rango de 0 a 1 (0 a 127 es el rango MIDI)
+            let volume = data2 / 127;
+
+            // Mostrar el mensaje en consola para ver qué mensajes están llegando
+            console.log(`Mensaje MIDI recibido: status=${status}, data1=${data1}, data2=${data2}`);
+
+            // Ajustar el volumen del reproductor según el valor del control MIDI
+            document.getElementById("volume").value = volume * 100;
+            player.setVolume(volume * 100);  // Establece el volumen del reproductor a este valor
+        }
+
+        // Cargar la API de YouTube IFrame
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName("script")[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     </script>
-
-
-
 </body>
 
 </html>
