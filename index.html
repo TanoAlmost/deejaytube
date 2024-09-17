@@ -113,10 +113,12 @@
 
     <script>
         let player;
-        let playerReady = false; // Bandera para verificar si el reproductor está listo
+        let playerReady = false;
         let nextPageToken = '', prevPageToken = '';
-        const apiKey = 'AIzaSyBcreu8WuHxYkxgKzn6ncFvvN1i-GDTsmw';  // Inserta aquí tu nueva clave de API de YouTube Data
-        const referenceBPM = 120;  // BPM de referencia para ajustar la velocidad
+        const apiKey = 'AIzaSyAR6I1YVACbVwtlGQiViE9zvAOKvWAVloE';  // Inserta aquí tu nueva clave de API de YouTube Data
+        const referenceBPM = 120;
+        let tapTimes = [];
+        const maxTaps = 4;
 
         // Cargar la API de YouTube IFrame
         const tag = document.createElement('script');
@@ -124,12 +126,12 @@
         const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        // Esta función es llamada por la API de YouTube IFrame cuando está lista
+        // Esta función es llamada cuando la API de YouTube está lista
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '200',  // Ajusta el tamaño según tu preferencia
+                height: '200',
                 width: '300',
-                videoId: '', // No se carga ningún video inicialmente
+                videoId: '',
                 events: {
                     'onReady': onPlayerReady
                 }
@@ -138,8 +140,8 @@
 
         // Función llamada cuando el reproductor está listo
         function onPlayerReady(event) {
-            playerReady = true; // Marcar el reproductor como listo
-            setupControls();    // Configurar los controles
+            playerReady = true;
+            setupControls();
         }
 
         // Configurar los controles de volumen y velocidad
@@ -148,13 +150,11 @@
             const speedControl = document.getElementById("speed");
             const speedValue = document.getElementById("speedValue");
 
-            // Control de volumen
             volumeControl.addEventListener("input", function () {
                 const volume = parseInt(volumeControl.value);
                 player.setVolume(volume);
             });
 
-            // Control de velocidad con ajuste suave (punto 0 en el centro)
             speedControl.addEventListener("input", function () {
                 const speedValueAdjusted = parseFloat(speedControl.value);
                 const actualSpeed = 1 + speedValueAdjusted;  // 1 es la velocidad normal
@@ -167,8 +167,6 @@
         function playVideo() {
             if (playerReady) {
                 player.playVideo();
-            } else {
-                console.log("El reproductor no está listo.");
             }
         }
 
@@ -176,8 +174,6 @@
         function stopVideo() {
             if (playerReady) {
                 player.stopVideo();
-            } else {
-                console.log("El reproductor no está listo.");
             }
         }
 
@@ -195,6 +191,51 @@
             }
         }
 
+        // Función para calcular velocidad según BPM
+        function calculateSpeedFromBPM(bpm) {
+            const bpmMin = 60;
+            const bpmMax = 240;
+            const speedMin = 0.25;
+            const speedMax = 2.0;
+            const speedFactor = ((bpm - bpmMin) / (bpmMax - bpmMin)) * (speedMax - speedMin) + speedMin;
+            return Math.max(speedMin, Math.min(speedFactor, speedMax));
+        }
+
+        // Función para tap tempo
+        function tapTempo() {
+            const currentTime = Date.now();
+            tapTimes.push(currentTime);
+
+            if (tapTimes.length > maxTaps) {
+                tapTimes.shift();
+            }
+
+            if (tapTimes.length === maxTaps) {
+                calculateBPM();
+            }
+        }
+
+        // Función para calcular BPM y ajustar la velocidad del video en consecuencia
+        function calculateBPM() {
+            const intervals = [];
+            for (let i = 1; i < tapTimes.length; i++) {
+                intervals.push(tapTimes[i] - tapTimes[i - 1]);
+            }
+
+            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+            const bpm = Math.round(60000 / avgInterval);
+
+            const clampedBPM = Math.max(60, Math.min(bpm, 240));
+            document.getElementById("bpmDisplay").textContent = `BPM: ${clampedBPM}`;
+
+            const speed = calculateSpeedFromBPM(clampedBPM);
+            player.setPlaybackRate(speed);
+
+            const speedControl = document.getElementById("speed");
+            speedControl.value = (speed - 1).toFixed(2);
+            document.getElementById("speedValue").textContent = speed.toFixed(2);
+        }
+
         // Función para buscar videos en YouTube
         function searchVideos(pageToken = '') {
             const query = document.getElementById("searchQuery").value;
@@ -206,27 +247,19 @@
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=10&videoEmbeddable=true&pageToken=${pageToken}`;
 
             fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const videoList = document.getElementById("videoList");
-                    videoList.innerHTML = '';  // Limpiar lista anterior
+                    videoList.innerHTML = '';
 
-                    // Guardar tokens de paginación
                     nextPageToken = data.nextPageToken || '';
                     prevPageToken = data.prevPageToken || '';
 
-                    // Si no hay resultados, mostrar un mensaje
                     if (!data.items || data.items.length === 0) {
                         videoList.innerHTML = '<li>No se encontraron resultados.</li>';
                         return;
                     }
 
-                    // Solo mostrar videos embebibles
                     data.items.forEach(item => {
                         const videoId = item.id.videoId;
                         const title = item.snippet.title;
@@ -259,8 +292,6 @@
             }
         }
     </script>
-
-
 
 </body>
 
