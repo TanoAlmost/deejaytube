@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductores de YouTube con Velocidad Ajustable</title>
+    <title>Reproductor de YouTube con Velocidad Ajustable</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,17 +13,10 @@
         }
 
         .container {
-            display: flex;
-            justify-content: space-around;
             margin-top: 20px;
         }
 
-        .player-container {
-            width: 45%;
-        }
-
-        #videoListLeft,
-        #videoListRight {
+        #videoList {
             list-style: none;
             padding: 0;
             max-height: 300px;
@@ -33,16 +26,14 @@
             border: 1px solid #ccc;
         }
 
-        #videoListLeft li,
-        #videoListRight li {
+        #videoList li {
             margin: 5px 0;
             cursor: pointer;
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
 
-        #videoListLeft li:hover,
-        #videoListRight li:hover {
+        #videoList li:hover {
             background-color: #f0f0f0;
         }
 
@@ -61,130 +52,71 @@
 </head>
 
 <body>
-    <h1>Reproductores de YouTube con Velocidad Ajustable</h1>
+    <h1>Reproductor de YouTube con Velocidad Ajustable</h1>
 
     <div class="container">
-        <!-- Reproductor Izquierda -->
-        <div class="player-container">
-            <h2>Izquierda</h2>
-            <input type="text" id="searchQueryLeft" placeholder="Buscar en YouTube..." style="width: 300px;">
-            <button onclick="searchVideos('left')">Buscar</button>
+        <input type="text" id="searchQuery" placeholder="Buscar en YouTube..." style="width: 300px;">
+        <button onclick="searchVideos()">Buscar</button>
 
-            <!-- Lista de videos encontrados (scrollable) -->
-            <ul id="videoListLeft"></ul>
+        <!-- Lista de videos encontrados (scrollable) -->
+        <ul id="videoList"></ul>
 
-            <!-- Botones de paginación -->
-            <div class="pagination-buttons">
-                <button onclick="navigatePage('left', 'prev')">Anterior</button>
-                <button onclick="navigatePage('left', 'next')">Siguiente</button>
-            </div>
-
-            <!-- Reproductor de YouTube -->
-            <div id="playerLeft"></div>
-
-            <!-- Controles de volumen y velocidad -->
-            <div class="control">
-                <label for="volumeLeft">Volumen:</label>
-                <input type="range" id="volumeLeft" min="0" max="100" step="1" value="100">
-            </div>
-
-            <div class="control">
-                <label for="speedLeft">Velocidad:</label>
-                <input type="range" id="speedLeft" min="-1" max="1" step="0.01" value="0">
-                <span id="speedValueLeft">1.0</span>
-            </div>
-
-            <!-- Botones de Play, Stop -->
-            <div class="control">
-                <button onclick="playVideo('left')">Play</button>
-                <button onclick="stopVideo('left')">Stop</button>
-            </div>
-
-            <!-- Botones de velocidad -->
-            <div class="speed-buttons">
-                <button onmousedown="changeSpeed('left', 1.2)" onmouseup="resetSpeed('left')">Velocidad 1.2x</button>
-                <button onmousedown="changeSpeed('left', 0.8)" onmouseup="resetSpeed('left')">Velocidad 0.8x</button>
-            </div>
+        <!-- Botones de paginación -->
+        <div class="pagination-buttons">
+            <button onclick="navigatePage('prev')">Anterior</button>
+            <button onclick="navigatePage('next')">Siguiente</button>
         </div>
 
-        <!-- Reproductor Derecha -->
-        <div class="player-container">
-            <h2>Derecha</h2>
-            <input type="text" id="searchQueryRight" placeholder="Buscar en YouTube..." style="width: 300px;">
-            <button onclick="searchVideos('right')">Buscar</button>
+        <!-- Reproductor de YouTube -->
+        <div id="player"></div>
 
-            <!-- Lista de videos encontrados (scrollable) -->
-            <ul id="videoListRight"></ul>
+        <!-- Controles de volumen y velocidad -->
+        <div class="control">
+            <label for="volume">Volumen:</label>
+            <input type="range" id="volume" min="0" max="100" step="1" value="100">
+        </div>
 
-            <!-- Botones de paginación -->
-            <div class="pagination-buttons">
-                <button onclick="navigatePage('right', 'prev')">Anterior</button>
-                <button onclick="navigatePage('right', 'next')">Siguiente</button>
-            </div>
+        <div class="control">
+            <label for="speed">Velocidad:</label>
+            <input type="range" id="speed" min="-10" max="10" step="0.1" value="0">
+            <span id="speedValue">1.0</span>
+        </div>
 
-            <!-- Reproductor de YouTube -->
-            <div id="playerRight"></div>
+        <!-- Botones de Play, Stop -->
+        <div class="control">
+            <button onclick="playVideo()">Play</button>
+            <button onclick="stopVideo()">Stop</button>
+        </div>
 
-            <!-- Controles de volumen y velocidad -->
-            <div class="control">
-                <label for="volumeRight">Volumen:</label>
-                <input type="range" id="volumeRight" min="0" max="100" step="1" value="100">
-            </div>
-
-            <div class="control">
-                <label for="speedRight">Velocidad:</label>
-                <input type="range" id="speedRight" min="-1" max="1" step="0.01" value="0">
-                <span id="speedValueRight">1.0</span>
-            </div>
-
-            <!-- Botones de Play, Stop -->
-            <div class="control">
-                <button onclick="playVideo('right')">Play</button>
-                <button onclick="stopVideo('right')">Stop</button>
-            </div>
-
-            <!-- Botones de velocidad -->
-            <div class="speed-buttons">
-                <button onmousedown="changeSpeed('right', 1.2)" onmouseup="resetSpeed('right')">Velocidad 1.2x</button>
-                <button onmousedown="changeSpeed('right', 0.8)" onmouseup="resetSpeed('right')">Velocidad 0.8x</button>
-            </div>
+        <!-- Botones de velocidad -->
+        <div class="speed-buttons">
+            <button onmousedown="changeSpeed(1.2)" onmouseup="resetSpeed()">Velocidad 1.2x</button>
+            <button onmousedown="changeSpeed(0.8)" onmouseup="resetSpeed()">Velocidad 0.8x</button>
         </div>
     </div>
 
     <script>
-        let playerLeft, playerRight;
-        let nextPageTokenLeft = '', prevPageTokenLeft = '';
-        let nextPageTokenRight = '', prevPageTokenRight = '';
+        let player;
+        let nextPageToken = '', prevPageToken = '';
         const apiKey = 'AIzaSyA3PhOaP9uUlaB-OR3CN7i3fWzJkan67vk';  // Inserta aquí tu clave de API de YouTube Data
 
         // Esta función es llamada por la API de YouTube IFrame cuando está lista
         function onYouTubeIframeAPIReady() {
-            playerLeft = new YT.Player('playerLeft', {
+            player = new YT.Player('player', {
                 height: '180',
                 width: '360',
                 videoId: '', // No se carga ningún video inicialmente
                 events: {
-                    'onReady': () => setupControls('left')
-                }
-            });
-
-            playerRight = new YT.Player('playerRight', {
-                height: '180',
-                width: '360',
-                videoId: '', // No se carga ningún video inicialmente
-                events: {
-                    'onReady': () => setupControls('right')
+                    'onReady': setupControls
                 }
             });
         }
 
         // Configurar los controles de volumen y velocidad
-        function setupControls(side) {
-            const volumeControl = document.getElementById(`volume${capitalize(side)}`);
-            const speedControl = document.getElementById(`speed${capitalize(side)}`);
-            const speedValue = document.getElementById(`speedValue${capitalize(side)}`);
-
-            const player = side === 'left' ? playerLeft : playerRight;
+        function setupControls() {
+            const volumeControl = document.getElementById("volume");
+            const speedControl = document.getElementById("speed");
+            const speedValue = document.getElementById("speedValue");
 
             // Control de volumen
             volumeControl.addEventListener("input", function () {
@@ -202,48 +134,39 @@
         }
 
         // Función para ajustar la velocidad temporalmente
-        function changeSpeed(side, speed) {
-            const player = side === 'left' ? playerLeft : playerRight;
+        function changeSpeed(speed) {
             player.setPlaybackRate(speed);
         }
 
         // Función para restablecer la velocidad a 1.0
-        function resetSpeed(side) {
-            const player = side === 'left' ? playerLeft : playerRight;
+        function resetSpeed() {
             player.setPlaybackRate(1.0);
         }
 
         // Función para reproducir el video
-        function playVideo(side) {
-            const player = side === 'left' ? playerLeft : playerRight;
+        function playVideo() {
             player.playVideo();
         }
 
         // Función para detener el video
-        function stopVideo(side) {
-            const player = side === 'left' ? playerLeft : playerRight;
+        function stopVideo() {
             player.stopVideo();
         }
 
         // Función para buscar videos en YouTube
-        function searchVideos(side, pageToken = '') {
-            const query = document.getElementById(`searchQuery${capitalize(side)}`).value;
+        function searchVideos(pageToken = '') {
+            const query = document.getElementById("searchQuery").value;
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=10&videoEmbeddable=true&pageToken=${pageToken}`;
 
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    const videoList = document.getElementById(`videoList${capitalize(side)}`);
+                    const videoList = document.getElementById("videoList");
                     videoList.innerHTML = '';  // Limpiar lista anterior
 
                     // Guardar tokens de paginación
-                    if (side === 'left') {
-                        nextPageTokenLeft = data.nextPageToken || '';
-                        prevPageTokenLeft = data.prevPageToken || '';
-                    } else {
-                        nextPageTokenRight = data.nextPageToken || '';
-                        prevPageTokenRight = data.prevPageToken || '';
-                    }
+                    nextPageToken = data.nextPageToken || '';
+                    prevPageToken = data.prevPageToken || '';
 
                     // Solo mostrar videos embebibles
                     data.items.forEach(item => {
@@ -252,35 +175,29 @@
 
                         const li = document.createElement("li");
                         li.textContent = title;
-                        li.onclick = () => loadVideo(side, videoId);
+                        li.onclick = () => loadVideo(videoId);
                         videoList.appendChild(li);
                     });
                 })
                 .catch(error => {
-                    console.error(`Error al buscar videos para ${side}:`, error);
+                    console.error(`Error al buscar videos:`, error);
                 });
         }
 
         // Función para cargar un video en el reproductor
-        function loadVideo(side, videoId) {
-            const player = side === 'left' ? playerLeft : playerRight;
+        function loadVideo(videoId) {
             if (player && videoId) {
                 player.loadVideoById(videoId);
             }
         }
 
         // Función para navegar entre páginas de resultados
-        function navigatePage(side, direction) {
-            if (direction === 'next') {
-                searchVideos(side, side === 'left' ? nextPageTokenLeft : nextPageTokenRight);
-            } else if (direction === 'prev') {
-                searchVideos(side, side === 'left' ? prevPageTokenLeft : prevPageTokenRight);
+        function navigatePage(direction) {
+            if (direction === 'next' && nextPageToken) {
+                searchVideos(nextPageToken);
+            } else if (direction === 'prev' && prevPageToken) {
+                searchVideos(prevPageToken);
             }
-        }
-
-        // Capitaliza la primera letra de una palabra
-        function capitalize(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
         // Cargar la API de YouTube IFrame
