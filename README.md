@@ -1,22 +1,84 @@
-# About
+# YouTube Player with Adjustable Speed and Tap Tempo
 
-Search, Play, and Mix Music Directly with YouTube!
+This project is a YouTube video player that allows users to search for YouTube videos, adjust playback speed, and set playback speed based on a tap tempo feature. The app uses the YouTube Data API to retrieve video information and an embedded YouTube player for playback.
 
-This application leverages YouTube and its API to provide an interactive platform where users can search, play, 
-and even mix music in real-time, all directly from YouTube's vast music library. 
+## Features
 
-The app offers a streamlined experience for music lovers who want to explore and enjoy tracks without switching between platforms.
+- **Search YouTube Videos**: Search for videos directly in the app.
+- **Adjust Playback Speed**: Control video playback speed.
+- **Tap Tempo to BPM**: Set video playback speed based on tapped tempo.
+- **Pagination**: Navigate through search results.
 
-## Key Features
-Instant Music Search: Type in your favorite songs, artists, or genres, and the app quickly fetches results using YouTube's powerful search capabilities.
-Seamless Playback: Play any track you find, with smooth transitions and playback, just as if you were listening on a dedicated music streaming service.
-Mixing Capabilities: Dive into mixing options that allow you to combine tracks, experiment with sounds, and create your own blends. 
-It’s perfect for casual listeners and aspiring DJs alike.
+## Setup Instructions
 
-## Technology Used
-This project is built entirely around the YouTube API, harnessing its potential to create a unique music experience 
-that goes beyond simple playback. It interacts directly with YouTube's API to bring all these features together in a single, easy-to-use application.
+### 1. Clone the Repository
 
-## Why This App?
-With the abundance of music available on YouTube, this app taps into that resource to give users full control over their music experience. Whether you’re searching for specific songs, 
-discovering new tracks, or creating a custom mix, this application makes it all possible, directly from YouTube.
+Clone the repository to your local machine:
+
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
+
+### 2. Add YouTube Data API Key
+
+This project requires a YouTube Data API key. Follow these steps:
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Enable the YouTube Data API v3.
+3. Create an API key.
+
+Replace `apiKey` in the script section of the HTML with your YouTube API key.
+
+### 3. Open the HTML File
+
+Simply open the `index.html` file in a browser to start the app.
+
+## Usage
+
+### Search Videos
+- Enter a keyword in the search bar and click **Buscar** to find YouTube videos.
+- Use the **Anterior** and **Siguiente** buttons to navigate through search results.
+
+### Adjust Video Playback
+- **Volume Control**: Use the slider to adjust video volume.
+- **Speed Control**: Adjust playback speed using the slider (0.5x to 1.5x speed).
+- **Play/Stop**: Use the **Play** and **Stop** buttons to control playback.
+
+### Tap Tempo Feature
+- Click the **Toca para BPM** button to set playback speed by tapping a rhythm.
+- The app calculates the BPM based on the taps and adjusts the playback speed accordingly.
+
+### Speed Buttons
+- Use preset speed buttons to adjust playback temporarily. For example, click **Velocidad 1.2x** for 1.2x speed.
+
+## Code Overview
+
+### HTML Structure
+- **Video List**: Displays search results in a scrollable list.
+- **YouTube Player**: Embedded YouTube player to play selected videos.
+- **Controls**: Includes volume, speed adjustment, and playback controls.
+
+### JavaScript Functions
+
+1. **onYouTubeIframeAPIReady**: Initializes the YouTube player.
+2. **searchVideos**: Fetches search results from the YouTube API.
+3. **tapTempo** and **calculateBPM**: Implements the tap tempo feature.
+4. **changeSpeed** and **resetSpeed**: Temporarily adjust playback speed.
+
+## Dependencies
+
+- **YouTube IFrame API**: Used to embed and control the YouTube player.
+- **YouTube Data API**: Used to search and retrieve video details.
+
+## Future Improvements
+
+- Add user authentication for personalized experiences.
+- Enhance UI/UX for mobile and desktop screens.
+- Implement a favorite videos feature.
+
+---
+
+## License
+
+This project is open-source and available under the MIT License.
